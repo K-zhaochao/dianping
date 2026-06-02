@@ -26,4 +26,34 @@ import javax.servlet.http.HttpSession;
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
+    /**
+     * 发送短信验证码并保存验证码
+     * @param phone
+     * @param session
+     * @return
+     */
+    public Result sendCode(String phone, HttpSession session) {
+        // 1.校验手机号
+        if (!RegexUtils.isPhoneInvalid(phone)){
+            // 2.如果不符合，返回错误信息
+            return Result.fail("手机号格式错误！");
+        }
+
+        // 3.符合，生成验证码
+        String code = RandomUtil.randomNumbers(6);
+
+        // 4。保存验证码到session
+        LoginFormDTO loginForm = LoginFormDTO.builder()
+                                .phone(phone)
+                                .code(code)
+                                .build();
+        session.setAttribute("code", loginForm);
+
+        // 5.发送验证码
+        log.debug("发送短信验证码成功, 验证码: {}", code);
+
+        // 返回ok
+        return Result.ok();
+    }
+
 }

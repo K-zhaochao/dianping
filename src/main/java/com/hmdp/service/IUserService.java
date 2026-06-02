@@ -17,4 +17,11 @@ import javax.servlet.http.HttpSession;
  */
 public interface IUserService extends IService<User> {
 
+    /**
+     * 发送短信验证码并保存验证码
+     * @param phone
+     * @param session
+     * @return
+     */
+    Result sendCode(String phone, HttpSession session);
 }
