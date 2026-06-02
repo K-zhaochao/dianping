@@ -7,8 +7,8 @@ import com.hmdp.dto.Result;
 import com.hmdp.entity.User;
 import com.hmdp.mapper.UserMapper;
 import com.hmdp.service.IUserService;
-import com.hmdp.utils.RegexPatterns;
 import com.hmdp.utils.RegexUtils;
+import com.hmdp.utils.SystemConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +34,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     public Result sendCode(String phone, HttpSession session) {
         // 1.校验手机号
-        if (!RegexUtils.isPhoneInvalid(phone)){
+        if (RegexUtils.isPhoneInvalid(phone)){
             // 2.如果不符合，返回错误信息
             return Result.fail("手机号格式错误！");
         }
@@ -56,4 +56,52 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return Result.ok();
     }
 
+    /**
+     * 实现登录功能
+     * @param loginForm
+     * @param session
+     * @return
+     */
+    public Result login(LoginFormDTO loginForm, HttpSession session) {
+        LoginFormDTO login = (LoginFormDTO) session.getAttribute("code");
+        if (login == null) {
+            return Result.fail("验证码已过期或未发送，请重新获取！");
+        }
+        // 1.校验手机号
+        if (RegexUtils.isPhoneInvalid(loginForm.getPhone()) || !loginForm.getPhone().equals(login.getPhone())) {
+            return Result.fail("手机号码不合法，请重新输入！");
+        }
+
+        // 2.校验验证码
+        if (loginForm.getCode() == null || !loginForm.getCode().equals(login.getCode())) {
+            // 3.不一致，报错
+            return Result.fail("验证码输入错误！");
+        }
+
+        // 4.一致，根据手机号查询用户
+        User user = query().eq("phone", loginForm.getPhone()).one();
+
+        // 5.判断用户是否存在
+        if (user == null) {
+            // 6.不存在，创建新用户并保存
+            user = createUserWithPhone(loginForm.getPhone());
+        }
+
+        // 7.保存用户信息到session中
+        session.setAttribute("user", user);
+
+        return Result.ok();
+    }
+
+    private User createUserWithPhone(String phone) {
+        // 1.创建用户
+        User user = new User();
+        user.setPhone(phone);
+        user.setNickName(SystemConstants.USER_NICK_NAME_PREFIX + RandomUtil.randomNumbers(10));
+
+        // 2.保存用户
+        save(user);
+
+        return user;
+    }
 }

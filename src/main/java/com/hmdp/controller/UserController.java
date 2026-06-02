@@ -38,7 +38,6 @@ public class UserController {
     public Result sendCode(@RequestParam("phone") String phone, HttpSession session) {
         // 发送短信验证码并保存验证码
         return userService.sendCode(phone, session);
-        ;
     }
 
     /**
@@ -47,8 +46,8 @@ public class UserController {
      */
     @PostMapping("/login")
     public Result login(@RequestBody LoginFormDTO loginForm, HttpSession session){
-        // TODO 实现登录功能
-        return null;
+        // 实现登录功能
+        return userService.login(loginForm, session);
     }
 
     /**
