@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,8 +40,8 @@ import static com.hmdp.utils.RedisConstants.*;
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -66,7 +67,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                                 .code(code)
                                 .build();
         // session.setAttribute("code", loginForm);
-        redisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone, objectMapper.writeValueAsString(loginForm), LOGIN_CODE_TTL, TimeUnit.MINUTES);
+        stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone, objectMapper.writeValueAsString(loginForm), LOGIN_CODE_TTL, TimeUnit.MINUTES);
 
         // 5.发送验证码
         log.debug("发送短信验证码成功, 验证码: {}", code);
@@ -88,7 +89,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
 
         // 从Redis中获取用户信息
-        String codeString = redisTemplate.opsForValue().get(LOGIN_CODE_KEY + loginForm.getPhone());
+        String codeString = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY + loginForm.getPhone());
         LoginFormDTO login = objectMapper.readValue(codeString, LoginFormDTO.class);
         //LoginFormDTO login = (LoginFormDTO) session.getAttribute("code");
         if (login == null) {
@@ -125,9 +126,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                         .setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
         // session.setAttribute("user", userDTO);
         // 7.3存储进redis
-        redisTemplate.opsForHash().putAll(key, map);
+        stringRedisTemplate.opsForHash().putAll(key, map);
         // 7.4设置有效期
-        redisTemplate.expire(key, LOGIN_USER_TTL, TimeUnit.SECONDS);
+        stringRedisTemplate.expire(key, LOGIN_USER_TTL, TimeUnit.SECONDS);
 
         return Result.ok(token);
     }
