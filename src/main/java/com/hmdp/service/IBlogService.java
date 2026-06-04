@@ -8,8 +8,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
  *  服务类
  * </p>
  *
- * @author 虎哥
- * @since 2021-12-22
+ * @author K-zhaochao
+ * @since 2026-06-04
  */
 public interface IBlogService extends IService<Blog> {
 

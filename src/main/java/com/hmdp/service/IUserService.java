@@ -13,8 +13,8 @@ import javax.servlet.http.HttpSession;
  *  服务类
  * </p>
  *
- * @author 虎哥
- * @since 2021-12-22
+ * @author K-zhaochao
+ * @since 2026-06-04
  */
 public interface IUserService extends IService<User> {
 
